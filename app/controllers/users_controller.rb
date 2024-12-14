@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-    before_action :authenticate_user!
+    before_action :authenticate_request!
 
     def finish_signup
         if request.patch? && params[:user] #&& params[:user][:email]
@@ -24,12 +24,12 @@ class UsersController < ApplicationController
     end
 
     def show
-        
+
     end
 
     def update
         if current_user.update_attributes(user_params)
-            render :show
+            render :show, status: 200
         else
             render json: { errors: current_user.errors }, status: :unprocessable_entity
         end
@@ -42,7 +42,6 @@ class UsersController < ApplicationController
     end
 
     def user_params
-        params.require(:user).permit(:email, :password, :password_confirmation)
+        params.require(:user).permit(:push_token, :os)
     end
 end
-  

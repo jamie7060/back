@@ -1,4 +1,5 @@
-class DiseasesController < ApplicationController
+class User::DiseasesController < ApplicationController
+  before_action :authenticate_request!, only: [:create, :update, :destroy]
   before_action :set_disease, only: [:show, :update, :destroy]
 
   # GET /diseases
@@ -15,12 +16,16 @@ class DiseasesController < ApplicationController
 
   # POST /diseases
   def create
-    @disease = Disease.new(disease_params)
-
-    if @disease.save
-      render json: @disease, status: :created, location: @disease
+    if current_user.sub_user_ids.include?(params[:sub_user_id].to_i)
+      begin
+        @disease = Disease.find_or_create_by(disease_params)
+      rescue
+        render json: @disease.errors, status: :unprocessable_entity
+      end
+      SubUser.find(params[:sub_user_id]).current_disease << @disease
+      render json: @disease, status: :created
     else
-      render json: @disease.errors, status: :unprocessable_entity
+      render json: { errors: ['권한이 없습니다.'] }, status: :unauthorized
     end
   end
 

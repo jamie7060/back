@@ -14,27 +14,23 @@ class Users::PasswordsController < Devise::PasswordsController
         self.resource = resource_class.new
         set_minimum_password_length
         resource.reset_password_token = params[:reset_password_token]
-        uri = URI("http://localhost:3001/reset-password")
+        uri = URI("https://twoyak.com/reset-password")
         uri.query = URI.encode_www_form(:token => params[:reset_password_token])
         redirect_to uri.to_s
       end
     
       # PUT /user/password
       def update
-        self.resource = resource_class.reset_password_by_token(resource_params)
+        self.resource = resource_class.reset_password_by_token(HashWithIndifferentAccess.new(JSON.parse(resource_params)))
         yield resource if block_given?
     
         if resource.errors.empty?
           resource.unlock_access! if unlockable?(resource)
-          if Devise.sign_in_after_reset_password
-            flash_message = resource.active_for_authentication? ? :updated : :updated_not_active
-            set_flash_message!(:notice, flash_message)
-            resource.after_database_authentication
-            sign_in(resource_name, resource)
-            resource.remember_me!
-          else
-            set_flash_message!(:notice, :updated_not_active)
-          end
+          flash_message = resource.active_for_authentication? ? :updated : :updated_not_active
+          set_flash_message(:notice, flash_message) if is_flashing_format?
+          sign_in(resource_name, resource)
+          resource.forget_me!
+          resource.remember_me!
           render json: {
             success: true,
             data: resource.as_json,
@@ -42,7 +38,10 @@ class Users::PasswordsController < Devise::PasswordsController
           }
         else
           set_minimum_password_length
-          respond_with resource
+          render json: {
+            success: false,
+            message: "유효하지 않은 토큰입니다. 비밀번호 찾기 메일을 재발송 해주세요"
+          }
         end
     end
     

@@ -55,7 +55,7 @@ class ApplicationController < ActionController::API
     rescue
       return false
     end
-  end
+  end  
 
   # #Override Devise's authenticate_user! method
   # def authenticate_user!(options = {})

@@ -1,6 +1,6 @@
 class AdverseEffectsController < ApplicationController
   before_action :set_adverse_effect, only: [:show, :update, :destroy]
-  before_action :authenticate_request!, :is_admin?, only: [:create, :update, :destroy]
+  before_action :authenticate_request!, only: [:create, :update, :destroy]
 
   # GET /adverse_effects
   def index
@@ -16,9 +16,7 @@ class AdverseEffectsController < ApplicationController
 
   # POST /adverse_effects
   def create
-    @adverse_effect = AdverseEffect.new(adverse_effect_params)
-
-    if @adverse_effect.save
+    if @adverse_effect = AdverseEffect.find_or_create_by(adverse_effect_params)
       render json: @adverse_effect, status: :created, location: @adverse_effect
     else
       render json: @adverse_effect.errors, status: :unprocessable_entity
@@ -47,14 +45,14 @@ class AdverseEffectsController < ApplicationController
 
     # Only allow a trusted parameter "white list" through.
     def adverse_effect_params
-      params.require(:adverse_effect).permit(:symptom_code, :symptom_name)
+      params.require(:adverse_effect).permit(:symptom_name)
     end
 
-    def is_admin?
-      if current_user.has_role? "admin"
-        return
-      else
-        render json: { errors: ['접속 권한이 없습니다.'] }, status: :unauthorized
-      end
-    end
+    # def is_admin?
+    #   if current_user.has_role? "admin"
+    #     return
+    #   else
+    #     render json: { errors: ['접속 권한이 없습니다.'] }, status: :unauthorized
+    #   end
+    # end
 end

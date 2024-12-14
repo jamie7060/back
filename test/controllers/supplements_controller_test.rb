@@ -12,7 +12,7 @@ class SupplementsControllerTest < ActionDispatch::IntegrationTest
 
   test "should create supplement" do
     assert_difference('Supplement.count') do
-      post supplements_url, params: { supplement: { approval_date: @supplement.approval_date, benefits: @supplement.benefits, description: @supplement.description, enterprise_name: @supplement.enterprise_name, ingredients: @supplement.ingredients, product_name: @supplement.product_name, production_code: @supplement.production_code, shelf_life: @supplement.shelf_life, standard: @supplement.standard, storage: @supplement.storage, suggested_use: @supplement.suggested_use, warnings: @supplement.warnings } }, as: :json
+      post supplements_url, params: { supplement: { name: @supplement.name, photo_url: @supplement.photo_url, price: @supplement.price, product_url: @supplement.product_url, rating: @supplement.rating, shopping_site: @supplement.shopping_site, shoppingmall_reviews: @supplement.shoppingmall_reviews } }, as: :json
     end
 
     assert_response 201
@@ -24,7 +24,7 @@ class SupplementsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should update supplement" do
-    patch supplement_url(@supplement), params: { supplement: { approval_date: @supplement.approval_date, benefits: @supplement.benefits, description: @supplement.description, enterprise_name: @supplement.enterprise_name, ingredients: @supplement.ingredients, product_name: @supplement.product_name, production_code: @supplement.production_code, shelf_life: @supplement.shelf_life, standard: @supplement.standard, storage: @supplement.storage, suggested_use: @supplement.suggested_use, warnings: @supplement.warnings } }, as: :json
+    patch supplement_url(@supplement), params: { supplement: { name: @supplement.name, photo_url: @supplement.photo_url, price: @supplement.price, product_url: @supplement.product_url, rating: @supplement.rating, shopping_site: @supplement.shopping_site, shoppingmall_reviews: @supplement.shoppingmall_reviews } }, as: :json
     assert_response 200
   end
 

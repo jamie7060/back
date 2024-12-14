@@ -1,5 +1,5 @@
 class AutocompleteController < ApplicationController
-  before_action :check_token!, only: [:disease]
+  before_action :check_token!, only: [:disease, :adverse_effect]
   before_action :set_sub_user, only: [:disease]
 
   require 'json'
@@ -62,8 +62,8 @@ class AutocompleteController < ApplicationController
   def disease
     @disease_terms = Hash.new
     @disease_terms["standard_diseases"] = JSON.parse(SearchTerm.pluck(:diseases)[1])
-    compiled = (@sub_user.current_disease) + (@sub_user.past_disease) unless @sub_user.blank?
-    @disease_terms["my_diseases"] = compiled.uniq! unless compiled.blank?
+    compiled = (@sub_user.current_disease.where("current_disease_id > 174")) + (@sub_user.past_disease.where("past_disease_id > 174")) unless @sub_user.blank?
+    @disease_terms["my_diseases"] = compiled.uniq unless compiled.blank?
     
     render json: @disease_terms
   end
@@ -74,6 +74,14 @@ class AutocompleteController < ApplicationController
 
   def sup
     render json: SearchTerm.pluck(:supplements)[1]
+  end
+
+  def adverse_effect
+    @adverse_effects = Hash.new
+    @adverse_effects["standard_adverse_effects"] = AdverseEffect.limit(79)
+    @adverse_effects["my_adverse_effects"] = current_user.adverse_effects.where("adverse_effect_id > 79") unless current_user.nil?
+    
+    render json: @adverse_effects
   end
 
   private

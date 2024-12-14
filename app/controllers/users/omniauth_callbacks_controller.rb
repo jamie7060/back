@@ -7,19 +7,19 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
           sign_in(@user, store: false)
           @token = JWT.encode(payload(@user), ENV['SECRET_KEY_BASE'], 'HS256')
           if @user.sign_in_count == 1
-            uri = URI("http://localhost:3000/add-info")
+            uri = URI("https://twoyak.com/add-info")
             uri.query = URI.encode_www_form(:token => @token)
             redirect_to uri.to_s
             return
           else
-            uri = URI("http://localhost:3000/login")
+            uri = URI("https://twoyak.com/login")
             uri.query = URI.encode_www_form(:token => @token)
             redirect_to uri.to_s
             return
           end
         else
 
-          uri = URI("http://localhost:3000/login-error")
+          uri = URI("https://twoyak.com/login-error")
           if @user.class != User
             #에러 url에 포함해서 리턴
             uri.query = URI.encode_www_form(@user)

@@ -25,16 +25,16 @@ class User::CurrentDrugsController < ApplicationController
 
     if @current_drug.include?(drug_found)
       render json: { errors: "이미 투약 중인 의약품입니다." }, status: :unprocessable_entity
-    elsif @current_drug << drug_found
+    elsif created = CurrentDrug.create(sub_user_id: @sub_user.id, current_drug_id: drug_found.id, from: params[:from] ? params[:from] : Time.zone.now, to: params[:to], memo: params[:memo], when: params[:when], how: params[:how])
       #dur 정보 추가
       dur_info = DurAnalysis.get_by_drug(DurAnalysis.drug_code([drug_found.id]))
-      drug_found.dur_info = dur_info unless dur_info.nil?
+      drug_found.dur_info = dur_info unless dur_info.blank?
       drug_found.save
-
-      selected =  @sub_user.current_drugs.order("created_at").last
-      selected.update(from: params[:from] ? params[:from] : Time.zone.now, to: params[:to], memo: params[:memo], when: params[:when], how: params[:how])
-      #먹는 이유 추가하기(질환추가)
-      selected.disease_ids = JSON.parse(params[:disease_ids]) unless params[:disease_ids].blank?
+      begin
+        disease = Disease.find_or_create_by(name: params[:disease_name])
+        #먹는 이유 추가하기(질환추가)
+        created.diseases << disease unless disease.blank?
+      end
 
       render json: @current_drug.pluck(:id, :name), status: :created
     else

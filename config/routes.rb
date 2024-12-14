@@ -1,9 +1,13 @@
 Rails.application.routes.draw do
+  resources :contents
   resources :health_news
   resources :hospitals
   resources :adverse_effects, :except => [:index]
   resources :suggestions
   resources :drug_ingrs
+  #s3 upload
+  resources :uploads
+  resources :prescription_photos, :except => [:update]
 
   # 속하는 의약품 보여주기
   get "related_drugs/:drug_ingr_id" => "drug_associations#show"
@@ -12,6 +16,12 @@ Rails.application.routes.draw do
   #관리자용
   get "admin" => "admin#index"
   get "admin/user_analysis" => "admin#user_analysis"
+
+  #유저 업데이트
+  get "users/:id" => "users#show"
+  patch "users" => "users#update"
+  #모바일 버전 정보
+  get "mobile/version" => "mobile#version"
 
   post "admin/check" => "admin#check"
   post "admin/push" => "admin#push"
@@ -27,6 +37,7 @@ Rails.application.routes.draw do
     resources :watch_drugs, :except => [:update, :destroy]
     scope ':sub_user_id' do
       #DUR 정보
+      resources :diseases
       get 'analysis/get'
       get "analysis/single/:drug_id" => "single_drug#cautions"
 
@@ -74,7 +85,7 @@ Rails.application.routes.draw do
   scope :api, defaults: { format: :json } do
     devise_for :users, controllers: { sessions: 'users/sessions', registrations: 'users/registrations', omniauth_callbacks: 'users/omniauth_callbacks', confirmations: 'users/confirmations', passwords: 'users/passwords' },
                        path_names: { sign_in: :login }
-    resources :user, only: [:show, :update]
+    # resources :user, only: [:show, :update]
     # social login
     post 'social' => 'users/social_login#sign_in'
   end
@@ -102,10 +113,15 @@ Rails.application.routes.draw do
 
   #drug 사진
   get "drugs/:id/pics" => "drugs#show_pics"
+  #drug dur
+  get "drugs/:id/dur_check" => "drugs#dur_check"
   resources :drugs, :except => [:index] do
     resources :drug_reviews
+     #좋아요 눌렀는지 확인
+     get '/"id/like' => 'drug_review_likes#show'
+     post '/:id/like' => 'drug_review_likes#like_toggle'
   end
-  resources :supplements, :except => [:index] do
+  resources :supplements do
     resources :sup_reviews
   end
   # get "drugs/:search_term" => "drugs#show"
@@ -116,18 +132,16 @@ Rails.application.routes.draw do
   get 'autocomplete/disease' => 'autocomplete#disease'
   get 'autocomplete/drug' => 'autocomplete#drug'
   get 'autocomplete/sup' => 'autocomplete#sup'
-  get 'autocomplete/adverse_effect' => 'adverse_effects#index'
+  get 'autocomplete/adverse_effect' => 'autocomplete#adverse_effect'
 
   resources :supplements, :except => [:show, :index]
   get "supplements/:search_term" => "supplements#show"
   # resources :supplement_ingrs_supplements
-  resources :supplement_ingrs, :except => [:show, :index]
-  get "supplement_ingrs/:search_term" => "supplement_ingrs#show"
+  resources :supplement_ingrs, :except => [:index]
   resources :interactions
   resources :dur_ingrs, :except => [:show]
   get "dur_ingrs/:search_term" => "dur_ingrs#show"
   # resources :drugs_dur_ingrs
-  resources :diseases
   resources :classifications
   get 'search_terms' => 'search_terms#index'
   get 'singleSearch/' => 'drugs#find_drug_mobile'

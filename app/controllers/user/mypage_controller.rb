@@ -38,8 +38,10 @@ class User::MypageController < ApplicationController
       sub_user.current_diseases.each { |d|
         @current_diseases << { id: d.id, parent_id: d.current_disease.id, name: d.current_disease.name, from: d.from, to: d.to }
       }
+      
       @past_drugs = PastDrugSerializer.new(sub_user.past_drugs, {params: {current_user: current_user}})
       @current_drugs = CurrentDrugSerializer.new(sub_user.current_drugs, {params: {current_user: current_user}})
+
       @past_supplements = []
       sub_user.past_supplements.each { |d|
         @past_supplements << { id: d.id, parent_id: d.past_supplement.id, name: d.past_supplement.name, from: d.from, to: d.to, memo: d.memo  }

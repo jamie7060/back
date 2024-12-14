@@ -40,7 +40,7 @@ class User::SubUsersController < ApplicationController
 
   # DELETE /sub_users/1
   def destroy
-    @sub_user.destroy
+    @sub_user.destroy unless (current_user.sub_users.first == @sub_user)
   end
 
   private

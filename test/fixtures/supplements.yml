@@ -1,29 +1,25 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  production_code: MyString
-  product_name: MyString
+  supplement_ingr: one
+  shopping_site: MyString
+  name: MyString
   enterprise_name: MyString
-  benefits: 
-  suggested_use: MyText
-  ingredients: MyText
-  storage: 
-  shelf_life: MyString
-  description: MyString
-  warnings: 
-  standard: 
-  approval_date: 2018-11-01
+  price: 1
+  product_url: MyString
+  photo_url: MyString
+  rating: 1.5
+  shoppingmall_reviews: 1
+  rank: 1
 
 two:
-  production_code: MyString
-  product_name: MyString
+  supplement_ingr: two
+  shopping_site: MyString
+  name: MyString
   enterprise_name: MyString
-  benefits: 
-  suggested_use: MyText
-  ingredients: MyText
-  storage: 
-  shelf_life: MyString
-  description: MyString
-  warnings: 
-  standard: 
-  approval_date: 2018-11-01
+  price: 1
+  product_url: MyString
+  photo_url: MyString
+  rating: 1.5
+  shoppingmall_reviews: 1
+  rank: 1

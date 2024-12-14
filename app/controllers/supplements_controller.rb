@@ -1,11 +1,12 @@
 class SupplementsController < ApplicationController
-  before_action :set_supplement, only: [:update, :destroy]
-  before_action :set_search, only: [:show]
+  before_action :set_supplement, only: [:show, :update, :destroy]
 
   # GET /supplements
   def index
-    @supplements = Supplement.all
-
+    supplements_found = SupplementIngr.find(params[:supplement_ingr_id]).supplements.where(shopping_site: params[:shopping_site]).includes(:rankings).order("supplement_ingrs_supplements.ranking asc")
+    @supplements = SupplementSerializer.new(supplements_found.paginate(page: params[:page], per_page: 12), {params: {supplement_ingr_id: params[:supplement_ingr_id]}}).serialized_json
+    #헤더에 total 갯수 넣어줌
+    response.set_header('Total-Count', supplements_found.size)
     render json: @supplements
   end
 
@@ -47,10 +48,6 @@ class SupplementsController < ApplicationController
 
     # Only allow a trusted parameter "white list" through.
     def supplement_params
-      params.require(:supplement).permit(:production_code, :name, :enterprise_name, :benefits, :suggested_use, :ingredients, :storage, :shelf_life, :description, :warnings, :standard, :approval_date)
-    end
-
-    def set_search
-      @supplement = Supplement.search(params[:search_term], fields: [name: :exact])
+      params.require(:supplement).permit(:shopping_site, :name, :price, :product_url, :photo_url, :rating, :shoppingmall_reviews)
     end
 end

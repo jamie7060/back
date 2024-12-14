@@ -1,6 +1,5 @@
 class SupplementIngrsController < ApplicationController
-  before_action :set_supplement_ingr, only: [:update, :destroy]
-  before_action :set_search, only: [:show]
+  before_action :set_supplement_ingr, only: [:show, :update, :destroy]
 
   # GET /supplement_ingrs
   def index
@@ -48,9 +47,5 @@ class SupplementIngrsController < ApplicationController
     # Only allow a trusted parameter "white list" through.
     def supplement_ingr_params
       params.require(:supplement_ingr).permit(:approval_no, :ingr_name, :enterprise_name, :benefits, :warnings, :daily_intake, :daily_intake_max, :daily_intake_min, :active_ingr)
-    end
-
-    def set_search
-      @supplement_ingr = SupplementIngr.search(search_term)
     end
 end

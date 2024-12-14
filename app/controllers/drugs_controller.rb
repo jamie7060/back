@@ -1,5 +1,5 @@
 class DrugsController < ApplicationController
-  before_action :set_drug, only: [:show, :update, :destroy, :show_pics]
+  before_action :set_drug, only: [:show, :update, :destroy, :show_pics, :dur_check]
   before_action :authenticate_request!,  only: [:create, :update, :destroy]
   before_action :check_authority, only: [:create, :update, :destroy]  
   # before_action :set_search, only: [:show]
@@ -11,9 +11,21 @@ class DrugsController < ApplicationController
     render json: @drugs
   end
 
+  def dur_check
+    require 'dur_analysis'
+    check_token!
+    if current_user.sub_user_ids.include? params[:sub_user_id].to_i
+      dur_info = DurAnalysis.drug_controller(DurAnalysis.drug_code(SubUser.find(params[:sub_user_id]).current_drug_ids.append(@drug.id)))
+      @data = Hash.new
+      @data[:dur_info] = dur_info
+      @data[:drug_searched] = @drug.name 
+    end
+
+    render json: @data
+  end
+
   # GET /drugs/1
   def show
-    # for development only
     Searchkick.disable_callbacks
 
     #안전정보 우선 확인
@@ -21,11 +33,20 @@ class DrugsController < ApplicationController
       require 'dur_analysis'
       dur_info = DurAnalysis.get_by_drug(DurAnalysis.drug_code([@drug.id]))
       @drug.dur_info = dur_info unless dur_info.blank?
-      @drug.save    
+      @drug.save
     end
     
     @data = Hash.new
     @data = @drug.as_json
+    #package_insert 형태 동일하게 가도록
+    if !@drug.package_insert.nil?
+      if @drug.package_insert.class == Hash
+          #Hash인 경우와 String인 경우 구분 => Hash로 모두 변환
+          @data["package_insert"] = @drug.package_insert
+      else
+          @data["package_insert"]= JSON.parse(@drug.package_insert)
+      end
+    end
     @data["ingr_kor_name"] = JSON.parse(@drug["ingr_kor_name"]) unless (@drug["ingr_kor_name"].nil? || @drug["ingr_kor_name"].kind_of?(Array))
     if params[:sub_user_id].present?
       #먹고 있는지 확인
@@ -44,7 +65,7 @@ class DrugsController < ApplicationController
       end
     end
     #현재 복용중인 인원
-    @data["sub_users_taking"] = @drug.currents.count
+    @data["sub_users_taking"] = @drug.currents.size
     #상호작용 추가
     inputs = []
     @drug.interactions.each { |interaction|
@@ -108,8 +129,9 @@ class DrugsController < ApplicationController
     # Searchkick.search(search, where: {name: /.*#{search}.*/, ingredients: /.*#{search}.*/})
     searched = if search
       Searchkick.search(search, {
-        index_name: [Drug, Supplement],
-        fields: [{name: :word_middle}],
+        index_name: [Drug],
+        fields: [{name: :word_middle}, :ingr_eng_name],
+        boost_by: [:item_seq],
         limit: 50
         # misspellings: {below: 5}
       })
@@ -153,7 +175,11 @@ class DrugsController < ApplicationController
     
     if(!@rep.nil?)
       if !@rep['package_insert'].nil?
-        @information = @rep['package_insert']['DRB_ITEM']
+        if @rep["package_insert"].class == Hash
+          @information = @rep["package_insert"]["DRB_ITEM"]
+        else
+          @information = JSON.parse(@rep["package_insert"])["DRB_ITEM"]
+        end
         @ITEM_NAME = @rep.name
 
         @data["item_name"] = @ITEM_NAME
@@ -190,8 +216,8 @@ class DrugsController < ApplicationController
     # Searchkick.search(search, where: {name: /.*#{search}.*/, ingredients: /.*#{search}.*/})
     searched = if search
       Searchkick.search(search, {
-        index_name: [Drug, Supplement],
-        fields: [{name: :word_middle}],
+        index_name: [Drug],
+        fields: [{name: :word_middle}, :ingr_eng_name],
         limit: 50
         # misspellings: {below: 5}
       })
@@ -216,7 +242,7 @@ class DrugsController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_drug
-      @drug = Drug.find(params[:id])
+      @drug = Drug.select(Drug.column_names - ["hira_medicine_code","hira_main_ingr_code"]).find(params[:id])
     end
 
     # Only allow a trusted parameter "white list" through.

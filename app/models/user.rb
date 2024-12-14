@@ -8,9 +8,12 @@ class User < ApplicationRecord
          :confirmable, :trackable, :omniauthable,
          :omniauth_providers => [:facebook, :google_oauth2, :naver]
 
-  has_many :sub_users
+  has_many :sub_users, :dependent => :destroy
   #의약품/건강기능식품 리뷰
   has_many :drug_reviews
+  #내가 남긴 리뷰 이상반응들
+  has_many :adverse_effects, :through => :drug_reviews
+
   has_many :sup_reviews
   #리뷰 댓글 남기기
   has_many :drug_review_comments
@@ -30,6 +33,8 @@ class User < ApplicationRecord
   #리뷰 좋아요
   has_many :drug_review_likes
   has_many :l_drug_reviews, through: :drug_review_likes, source: :drug_review
+
+  
 
   #이메일 형식
   # VALID_EMAIL_REGEX = /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i

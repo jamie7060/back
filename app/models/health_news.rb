@@ -1,0 +1,2 @@
+class HealthNews < ApplicationRecord
+end

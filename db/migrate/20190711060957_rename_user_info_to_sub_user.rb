@@ -12,7 +12,7 @@ class RenameUserInfoToSubUser < ActiveRecord::Migration[5.2]
   end
 
   def self.down
-    rename_table :user_infos, :sub
+    rename_table :user_infos, :sub_users
     rename_column :current_diseases, :user_info_id, :sub_user_id
     rename_column :past_diseases, :user_info_id, :sub_user_id
     rename_column :current_drugs, :user_info_id, :sub_user_id
